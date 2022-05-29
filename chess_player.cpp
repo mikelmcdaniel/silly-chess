@@ -38,6 +38,7 @@ Move HumanPlayer::get_move(const Board& board, const vector<Move>& moves) const 
     cin >> move;
     cout << endl;
     if (find(moves.begin(), moves.end(), move) != moves.end()) {
+      cin.ignore(256, '\n');
       break;
     }
     cin.clear();
