@@ -41,6 +41,7 @@ Move HumanPlayer::get_move(const Board& board, const vector<Move>& moves) const 
       break;
     }
     cin.clear();
+    cin.ignore(256, '\n');
     cout << move << " is not a valid move! Please choose one of the following moves: \n";
     for (Move valid_move : moves) {
       cout << valid_move << ' ';
