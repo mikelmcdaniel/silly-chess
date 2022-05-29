@@ -40,6 +40,7 @@ Move HumanPlayer::get_move(const Board& board, const vector<Move>& moves) const 
     if (find(moves.begin(), moves.end(), move) != moves.end()) {
       break;
     }
+    cin.clear();
     cout << move << " is not a valid move! Please choose one of the following moves: \n";
     for (Move valid_move : moves) {
       cout << valid_move << ' ';
