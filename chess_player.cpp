@@ -38,8 +38,11 @@ Move HumanPlayer::get_move(const Board& board, const vector<Move>& moves) const 
     cin >> move;
     cout << endl;
     if (find(moves.begin(), moves.end(), move) != moves.end()) {
+      cin.ignore(256, '\n');
       break;
     }
+    cin.clear();
+    cin.ignore(256, '\n');
     cout << move << " is not a valid move! Please choose one of the following moves: \n";
     for (Move valid_move : moves) {
       cout << valid_move << ' ';
