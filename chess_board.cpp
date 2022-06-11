@@ -79,6 +79,11 @@ const ChessPiece& Board::operator[](Cell cell) const {
 }
 
 void Board::reset_board() {
+  board.resize(8);
+  for (vector<const ChessPiece*>& row : board) {
+    row.resize(8);
+  }
+
   for (int y = 0; y < 8; ++y) {
     for (int x = 0; x < 8; ++x) {
       board[y][x] = &EMPTY_SPACE;
