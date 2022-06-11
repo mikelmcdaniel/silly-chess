@@ -2,17 +2,21 @@
 #include <map>
 #include <sstream>
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 #include "utf8_codepoint.h"
 #include "chess_pieces.h"
 #include "chess_board.h"
 
+using std::cout;
 using std::endl;
 using std::istream;
+using std::getline;
 using std::map;
 using std::ostream;
 using std::out_of_range;
+using std::string;
 using std::stringstream;
 using std::vector;
 
@@ -183,4 +187,46 @@ ostream& operator<<(ostream& os, const Board& board) {
   }
   os << "   abcdefgh\n";
   return os;
+}
+
+istream& getline(istream& is, vector<UTF8CodePoint>& line) {
+  UTF8CodePoint cp;
+  line.clear();
+  while((is >> cp) && cp != '\n') {
+    line.push_back(cp);
+  }
+  return is;
+}
+
+istream& operator>>(istream& is, Board& board) {
+  string abc_line;
+  getline(is, abc_line);
+  if (abc_line != "   abcdefgh") {
+    stringstream msg;
+    msg << "First line of Board != \"   abcdefgh\". We got " << abc_line << " instead.";
+    throw std::invalid_argument(msg.str());
+  }
+
+  vector<UTF8CodePoint> line;
+  for (int y = 7; y >= 0; --y) {
+    getline(is, line);
+    for (int x = 0; x < 8; ++x) {
+      UTF8CodePoint piece = line.at(x + 3);
+      auto it = ALL_CHESS_PIECES.find(piece);
+      if (it == ALL_CHESS_PIECES.end()) {
+        stringstream msg;
+        msg << "UTF8CodePoint " << piece << " at (" << x << ", " << y << ") is not in ALL_CHESS_PIECES!";
+        throw std::invalid_argument(msg.str());
+      }
+      board.board[y][x] = it->second;
+    }
+  }
+  
+  getline(is, abc_line);
+  if (abc_line != "   abcdefgh") {
+    stringstream msg;
+    msg << "Last line of Board != \"   abcdefgh\". We got " << abc_line << " instead.";
+    throw std::invalid_argument(msg.str());
+  }
+  return is;
 }
