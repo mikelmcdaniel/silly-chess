@@ -12,7 +12,7 @@ void test_board_input() {
   stringstream original_board_stream2;
   stringstream modified_board_stream;
   
-  b.make_move(b.get_moves()[0]);
+  // b.make_move(b.get_moves()[0]);
   original_board_stream << b;
 
   b.make_move(b.get_moves()[0]);
@@ -38,7 +38,7 @@ void test_board_input() {
   }
 }
 
-int chess_board_test_main(int argc, const char *argv[]) {
+int main(int argc, const char *argv[]) {
   test_board_input();
   return 0;
 }

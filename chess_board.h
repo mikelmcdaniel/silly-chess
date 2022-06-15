@@ -72,6 +72,9 @@ public:
   // Returns the winner or NONE if there is no winner (yet).
   Team winner() const;
 
+  int num_rows() const;
+  int num_cols() const;
+
   friend ostream& operator<<(ostream& os, const Board& board);
   friend istream& operator>>(istream& is, Board& board);
 };

@@ -1,4 +1,6 @@
+#include <algorithm>
 #include <iostream>
+#include <iomanip>
 #include <map>
 #include <sstream>
 #include <stdexcept>
@@ -16,6 +18,8 @@ using std::getline;
 using std::map;
 using std::ostream;
 using std::out_of_range;
+using std::reverse;
+using std::setw;
 using std::string;
 using std::stringstream;
 using std::vector;
@@ -118,8 +122,8 @@ void Board::reset_board() {
 
 vector<Move> Board::get_moves() const {
   vector<Move> moves;
-  for (int y = 0; y < 8; ++y) {
-    for (int x = 0; x < 8; ++x) {
+  for (int y = 0; y < num_rows(); ++y) {
+    for (int x = 0; x < num_cols(); ++x) {
       if (board[y][x]->team == current_teams_turn) {
         board[y][x]->get_moves(*this, Cell(x, y), moves);
       }
@@ -157,13 +161,13 @@ void Board::make_move(Move move) {
 }
 
 bool Board::contains(Cell cell) const {
-  return cell.x >= 0 && cell.x < 8 && cell.y >= 0 && cell.y < 8;
+  return cell.x >= 0 && cell.x < num_cols() && cell.y >= 0 && cell.y < num_rows();
 }
 
 Team Board::winner() const {
   bool found_white_king = false, found_black_king = false;
-  for (int y = 0; y < 8; ++y) {
-    for (int x = 0; x < 8; ++x) {
+  for (int y = 0; y < num_rows(); ++y) {
+    for (int x = 0; x < num_cols(); ++x) {
       if (board[y][x] == &WHITE_KING) {
         found_white_king = true;
       } else if (board[y][x] == &BLACK_KING) {
@@ -182,15 +186,27 @@ Team Board::winner() const {
 
 
 ostream& operator<<(ostream& os, const Board& board) {
-  os << "   abcdefgh\n";
-  for (int y = 7; y >= 0; --y) {
-    os << ' ' << (y + 1) << ' ';
-    for (int x = 0; x < 8; ++x) {
+  // Print "abc..." row
+  os << "   ";
+  for (char c = 'a'; c < 'a' + board.num_cols(); ++c) {
+    os << c;
+  }
+  os << '\n';
+
+  for (int y = board.num_rows() - 1; y >= 0; --y) {
+    os << setw(2) << (y + 1) << ' ';
+    for (int x = 0; x < board.num_cols(); ++x) {
       os << board[Cell(x, y)];
     }
-    os << ' ' << (y + 1) << endl;
+    os << setw(2) << (y + 1) << endl;
   }
-  os << "   abcdefgh\n";
+
+  // Print "abc..." row
+  os << "   ";
+  for (char c = 'a'; c < 'a' + board.num_cols(); ++c) {
+    os << c;
+  }
+  os << '\n';
   return os;
 }
 
@@ -206,32 +222,87 @@ istream& getline(istream& is, vector<UTF8CodePoint>& line) {
 istream& operator>>(istream& is, Board& board) {
   string abc_line;
   getline(is, abc_line);
-  if (abc_line != "   abcdefgh") {
+
+  if (abc_line.find("   ") != 0) {
     stringstream msg;
-    msg << "First line of Board != \"   abcdefgh\". We got " << abc_line << " instead.";
+    msg << "First line of Board does not start with \"   \". We got " << abc_line << " instead.";
     throw std::invalid_argument(msg.str());
   }
+  for (int i = 3; i < abc_line.size(); ++i) {
+    if (abc_line[i] != 'a' - 3 + i) {
+      stringstream msg;
+      msg 
+        << "First line of Board had '" << abc_line[i] << "' at index " 
+        << i << ". We got \"" << abc_line << "\" instead.";
+      throw std::invalid_argument(msg.str());
+    }
+  }
+  const int num_cols = abc_line.size() - 3;
 
+  board.board.resize(0);
   vector<UTF8CodePoint> line;
-  for (int y = 7; y >= 0; --y) {
-    getline(is, line);
-    for (int x = 0; x < 8; ++x) {
-      UTF8CodePoint piece = line.at(x + 3);
+  while(true) {
+    int y;
+    is >> y;
+    if (!is) {
+      throw std::invalid_argument("istream is not good after trying to read row number in Board.");
+    }
+    UTF8CodePoint space;
+    is >> space;
+    if (space != ' ') {
+      throw std::invalid_argument("Expected space after row number!");
+    }
+    board.board.resize(board.board.size() + 1);
+    for (int x = 0; x < num_cols; ++x) {
+      UTF8CodePoint piece;
+      is >> piece;
+      if (!is) {
+        throw std::invalid_argument("istream is not good after trying to read a piece.");
+      }
       auto it = ALL_CHESS_PIECES.find(piece);
       if (it == ALL_CHESS_PIECES.end()) {
         stringstream msg;
         msg << "UTF8CodePoint " << piece << " at (" << x << ", " << y << ") is not in ALL_CHESS_PIECES!";
         throw std::invalid_argument(msg.str());
       }
-      board.board[y][x] = it->second;
+      board.board[board.board.size() - 1].push_back(it->second);
+    }
+
+    int y2;
+    is >> y2;
+    if (!is) {
+      throw std::invalid_argument("istream is not good after trying to read row number in Board.");
+    }
+    if (y != y2) {
+      throw std::invalid_argument("Row numbers at beginning and end of row do not match!");
+    }
+    UTF8CodePoint new_line;
+    is >> new_line;
+    if (new_line != '\n') {
+      throw std::invalid_argument("Expected new_line after row number!");
+    }
+
+    if (y == 1) {
+      break;
     }
   }
+
+  reverse(board.board.begin(), board.board.end());
   
-  getline(is, abc_line);
-  if (abc_line != "   abcdefgh") {
+  string abc_line2;
+  getline(is, abc_line2);
+  if (abc_line != abc_line2) {
     stringstream msg;
-    msg << "Last line of Board != \"   abcdefgh\". We got " << abc_line << " instead.";
+    msg << "Last line of Board != first line of board. We got " << abc_line2 << " instead.";
     throw std::invalid_argument(msg.str());
   }
   return is;
+}
+
+int Board::num_rows() const {
+  return board.size();
+}
+
+int Board::num_cols() const {
+  return board[0].size();
 }
