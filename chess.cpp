@@ -46,9 +46,9 @@ Team play_one_chess_game(Player& white_player, Player& black_player, ostream& os
   return winner;
 }
 
-// int main(int argc, const char *argv[]) {
-//   CheckMateCapturePlayer white_player(WHITE);
-//   CheckMateCapturePlayer black_player(BLACK);
-//   play_one_chess_game(white_player, black_player, cout);
-//   return 0;
-// }
+int main(int argc, const char *argv[]) {
+  HumanPlayer white_player(WHITE);
+  CheckMateCapturePlayer black_player(BLACK);
+  play_one_chess_game(white_player, black_player, cout);
+  return 0;
+}
