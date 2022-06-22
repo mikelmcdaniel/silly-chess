@@ -38,7 +38,7 @@ void test_board_input() {
   }
 }
 
-int main(int argc, const char *argv[]) {
-  test_board_input();
-  return 0;
-}
+// int main(int argc, const char *argv[]) {
+//   test_board_input();
+//   return 0;
+// }
