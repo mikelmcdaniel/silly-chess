@@ -1,5 +1,7 @@
 ## Silly Chess!
 
+Note: This was for a class I was teaching. This isn't a serious project. ;)
+
 It's chess but with less rules.
 
 - Pawns don't move 2 spaces on their first turn
